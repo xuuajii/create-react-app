@@ -1,2 +1,3 @@
 const execSync = require('child_process').execSync;
-execSync('npm --version');
+const npmVersion = execSync('npm --version');
+console.log(npmVersion);
