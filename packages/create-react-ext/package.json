@@ -10,8 +10,5 @@
   },
   "files": [
     "index.js"
-  ],
-  "dependencies": {
-    "create-react-app": "3.4.1"
-  }
+  ]
 }

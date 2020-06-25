@@ -1,3 +1,5 @@
 const execSync = require('child_process').execSync;
-const npmVersion = execSync('npm --version').toString().trim();
-console.log(npmVersion);
+const extCreated = execSync(
+  'npx create-react-app my-ext --template extension',
+  { stdio: 'inherit' }
+);
