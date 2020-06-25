@@ -1,1 +1,2 @@
-require('create-react-app');
+const execSync = require('child_process').execSync;
+execSync('npm --version');
