@@ -43,6 +43,8 @@ const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages');
 const printHostingInstructions = require('react-dev-utils/printHostingInstructions');
 const FileSizeReporter = require('react-dev-utils/FileSizeReporter');
 const printBuildError = require('react-dev-utils/printBuildError');
+const archiver = require('archiver');
+const glob = require('glob');
 
 const measureFileSizesBeforeBuild =
   FileSizeReporter.measureFileSizesBeforeBuild;
@@ -214,11 +216,60 @@ function build(previousFileSizes) {
           .then(() => resolve(resolveArgs))
           .catch(error => reject(new Error(error)));
       }
-
+      compressAndRemove();
       return resolve(resolveArgs);
     });
   });
 }
+
+const compressAndRemove = () => {
+  const appName = require(paths.appPackageJson).name;
+  const buildFolder = path.relative(process.cwd(), paths.appBuild);
+  const zipPath = path.resolve(paths.appPath, appName + '.zip');
+  const output = fs.createWriteStream(zipPath);
+  const archive = archiver('zip', {
+    zlib: { level: 9 }, // Sets the compression level.
+  });
+  output.on('close', function () {
+    console.log(archive.pointer() + ' total bytes');
+    console.log(
+      'archiver has been finalized and the output file descriptor has closed.'
+    );
+    fs.removeSync(buildFolder);
+  });
+
+  // This event is fired when the data source is drained no matter what was the data source.
+  // It is not part of this library but rather from the NodeJS Stream API.
+  // @see:   https://nodejs.org/api/stream.html#stream_event_end
+  output.on('end', function () {
+    console.log('Zip done');
+  });
+  // listen for all archive data to be written
+  // 'close' event is fired only when a file descriptor is involved
+  archive.pipe(output);
+  const files = glob.sync(buildFolder + '/*');
+
+  files.forEach(file => {
+    const appNameRegExp = new RegExp(appName + '.js');
+    if (file.match(appNameRegExp)) {
+      console.log('aaaaaaaaaaaaaaaaaaaaaaa');
+      archive.file(file, {
+        name: file.substr(
+          file.lastIndexOf('/'),
+          file.length - file.lastIndexOf('/')
+        ),
+      });
+    } else {
+      archive.file(file, {
+        name: file.substr(
+          file.lastIndexOf('/'),
+          file.length - file.lastIndexOf('/')
+        ),
+      });
+    }
+  });
+  archive.finalize();
+};
 
 function copyPublicFolder() {
   fs.copySync(paths.appPublic, paths.appBuild, {

@@ -56,9 +56,25 @@ if (!checkRequiredFiles([paths.appHtml, paths.appIndexJs])) {
   process.exit(1);
 }
 
+if (paths.appPath.match(/Documents\\Qlik\\Sense\\Extensions/g)) {
+  console.log(
+    chalk.yellow(
+      'The extension is supposed to be served inside Qlik Sense Desktop extensions directory. Other configurations are not supported'
+    )
+  );
+}
+
 // Tools like Cloud9 rely on this.
 const DEFAULT_PORT = parseInt(process.env.PORT, 10) || 3000;
-const HOST = process.env.HOST || '0.0.0.0';
+if (DEFAULT_PORT !== 3000) {
+  const appName = require(paths.appPackageJson).name;
+  console.log(
+    chalk.yellow(
+      `You have changed webpack-dev-server port, be sure to change ${appName}.js file accordingly`
+    )
+  );
+}
+const HOST = process.env.HOST || 'localhost';
 
 if (process.env.HOST) {
   console.log(
@@ -143,7 +159,24 @@ checkBrowsers(paths.appPath, isInteractive)
       }
 
       console.log(chalk.cyan('Starting the development server...\n'));
-      openBrowser(urls.localUrlForBrowser);
+      const prepareQlikUrl = () => {
+        const browserAppsPath =
+          paths.qlikAppsPath.replace(':', '%3A').replace(/\\/g, '%5C') + '%5C';
+        const sheetPath = process.env.QLIK_SHEET_ID
+          ? 'sheet/' + process.env.QLIK_SHEET_ID
+          : '';
+        return process.env.QLIK_APP_NAME
+          ? 'http://' +
+              HOST +
+              ':4848/sense/app/' +
+              browserAppsPath +
+              process.env.QLIK_APP_NAME +
+              '/' +
+              sheetPath
+          : 'http://' + HOST + ':4848/hub/';
+      };
+      const qlikUrl = prepareQlikUrl();
+      openBrowser(qlikUrl);
     });
 
     ['SIGINT', 'SIGTERM'].forEach(function (sig) {

@@ -6,9 +6,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 'use strict';
-console.log('******************************************************');
-console.log('started');
-console.log('******************************************************');
 // Makes the script crash on unhandled rejections instead of silently
 // ignoring them. In the future, promise rejections that are not handled will
 // terminate the Node.js process with a non-zero exit code.
@@ -186,10 +183,13 @@ module.exports = function (
   const templateScripts = templatePackage.scripts || {};
   appPackage.scripts = Object.assign(
     {
-      start: 'react-scripts start',
-      build: 'react-scripts build',
-      test: 'react-scripts test',
-      eject: 'react-scripts eject',
+      //start: 'react-scripts start',
+      start: 'react-ext-scripts start',
+      //build: 'react-scripts build',
+      build: 'react-ext-scripts build',
+      // test: 'react-scripts test',
+      //eject: 'react-scripts eject',
+      eject: 'react-ext-scripts eject',
     },
     templateScripts
   );
@@ -235,6 +235,12 @@ module.exports = function (
   const templateDir = path.join(templatePath, 'template');
   if (fs.existsSync(templateDir)) {
     fs.copySync(templateDir, appPath);
+    const templateExtName = path.join(appPath, 'react-ext.js');
+    const appExtName = path.join(
+      appPath,
+      require(path.join(appPath, 'package.json')).name
+    );
+    fs.renameSync(templateExtName, appExtName);
   } else {
     console.error(
       `Could not locate supplied template: ${chalk.green(templateDir)}`

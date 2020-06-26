@@ -11,6 +11,7 @@
 const path = require('path');
 const fs = require('fs');
 const getPublicUrlOrPath = require('react-dev-utils/getPublicUrlOrPath');
+const os = require('os');
 
 // Make sure any symlinks in the project folder are resolved:
 // https://github.com/facebook/create-react-app/issues/637
@@ -28,6 +29,15 @@ const publicUrlOrPath = getPublicUrlOrPath(
   require(resolveApp('package.json')).homepage,
   process.env.PUBLIC_URL
 );
+const getQlikPath = () => {
+  const osUser = os.userInfo().username.toUpperCase();
+  const isInExtesions =
+    appDirectory.match(/Documents\\Qlik\\Sense\\Extensions/g) > 0;
+  return isInExtesions
+    ? appDirectory.substr(0, appDirectory.indexOf('Sense') + 5)
+    : path.resolve('C:', 'Users', osUser, 'Documents', 'Qlik', 'Sense');
+};
+const qlikPath = getQlikPath();
 
 const moduleFileExtensions = [
   'web.mjs',
@@ -73,6 +83,10 @@ module.exports = {
   proxySetup: resolveApp('src/setupProxy.js'),
   appNodeModules: resolveApp('node_modules'),
   publicUrlOrPath,
+  ///
+  qlikPath: qlikPath,
+  qlikAppsPath: path.resolve(qlikPath, 'Apps'),
+  qlikExtensionsPath: path.resolve(qlikPath, 'Extensions'),
 };
 
 // @remove-on-eject-begin
@@ -100,6 +114,10 @@ module.exports = {
   ownNodeModules: resolveOwn('node_modules'), // This is empty on npm 3
   appTypeDeclarations: resolveApp('src/react-app-env.d.ts'),
   ownTypeDeclarations: resolveOwn('lib/react-app.d.ts'),
+  ///
+  qlikPath: qlikPath,
+  qlikAppsPath: path.resolve(qlikPath, 'Apps'),
+  qlikExtensionsPath: path.resolve(qlikPath, 'Extensions'),
 };
 
 const ownPackageJson = require('../package.json');
@@ -113,7 +131,7 @@ if (
   !reactScriptsLinked &&
   __dirname.indexOf(path.join('packages', 'react-scripts', 'config')) !== -1
 ) {
-  const templatePath = '../cra-template/template';
+  const templatePath = '../cra-template-extension/template';
   module.exports = {
     dotenv: resolveOwn(`${templatePath}/.env`),
     appPath: resolveApp('.'),
@@ -135,6 +153,10 @@ if (
     ownNodeModules: resolveOwn('node_modules'),
     appTypeDeclarations: resolveOwn(`${templatePath}/src/react-app-env.d.ts`),
     ownTypeDeclarations: resolveOwn('lib/react-app.d.ts'),
+    ///
+    qlikPath: qlikPath,
+    qlikAppsPath: path.resolve(qlikPath, 'Apps'),
+    qlikExtensionsPath: path.resolve(qlikPath, 'Extensions'),
   };
 }
 // @remove-on-eject-end
