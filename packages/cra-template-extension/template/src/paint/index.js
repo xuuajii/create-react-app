@@ -2,11 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 const layout = (el, layout, qlik, extInterface) => {
-  console.log('succhia merdoso qlik bastardo inutile...', extInterface);
   ReactDOM.render(
-    <h1>
-      Succhia bastardo RequireJS, sei inutile e dannoso. Voglio sconfiggerti.
-    </h1>,
+    <h1>This is an Extension created with create-react-ext.</h1>,
     el[0]
   );
 };

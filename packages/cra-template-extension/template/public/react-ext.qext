@@ -1,12 +1,12 @@
 {
 	"name": "react-ext",
-	"description": "Chart visualization template",
-	"icon": "control",
- "type": "visualization",
+	"description": "",
+	"icon": "",
+ 	"type": "visualization",
 	"version": "1.0.0",
 	"author": "",
 	"homepage": "",
-	"keywords": "qlik-sense, visualization",
+	"keywords": "",
 	"license": "",
 	"repository": "",
 	"dependencies": {
