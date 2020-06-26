@@ -178,13 +178,18 @@ if (typeof projectName === 'undefined') {
   );
   process.exit(1);
 }
-
+const extTemplate = program.template || 'extension';
+const extScripts = program.scriptsVersion || 'react-ext-scripts';
+console.log(
+  'Template to install: ' + extTemplate,
+  'Scripts to install: ' + extScripts
+);
 createApp(
   projectName,
   program.verbose,
-  program.scriptsVersion,
-  program.template || 'extension',
-  program.useNpm || 'react-ext-scripts',
+  extScripts,
+  extTemplate,
+  program.useNpm,
   program.usePnp
 );
 
@@ -234,20 +239,16 @@ function createApp(name, verbose, version, template, useNpm, usePnp) {
   if (!useYarn) {
     const npmInfo = checkNpmVersion();
     if (!npmInfo.hasMinNpm) {
-      // if (npmInfo.npmVersion) {
-      //   console.log(
-      //     chalk.yellow(
-      //       `You are using npm ${npmInfo.npmVersion} so the project will be bootstrapped with an old unsupported version of tools.\n\n` +
-      //         `Please update to npm 6 or higher for a better, fully supported experience.\n`
-      //     )
-      //   );
-      // }
-      // // Fall back to latest supported react-scripts for npm 3
-      // version = 'react-scripts@0.9.x';
-      console.log(
-        'Your npm version is not supported, please update to npm 6 or higher'
-      );
-      process.exit(1);
+      if (npmInfo.npmVersion) {
+        console.log(
+          chalk.yellow(
+            `You are using npm ${npmInfo.npmVersion} so the project will be bootstrapped with an old unsupported version of tools.\n\n` +
+              `Please update to npm 6 or higher for a better, fully supported experience.\n`
+          )
+        );
+      }
+      // Fall back to latest supported react-scripts for npm 3
+      version = 'react-scripts@0.9.x';
     }
   } else if (usePnp) {
     const yarnInfo = checkYarnVersion();
