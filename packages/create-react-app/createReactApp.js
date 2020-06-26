@@ -624,7 +624,7 @@ function getTemplateInstallPackage(template, originalDirectory) {
       }
     }
   }
-
+  console.log(templateToInstall);
   return Promise.resolve(templateToInstall);
 }
 
