@@ -34,8 +34,6 @@
 
 'use strict';
 
-const defaultScriptVersion = 'react-ext-scripts';
-
 const chalk = require('chalk');
 const commander = require('commander');
 const dns = require('dns');
@@ -155,7 +153,7 @@ if (program.info) {
         System: ['OS', 'CPU'],
         Binaries: ['Node', 'npm', 'Yarn'],
         Browsers: ['Chrome', 'Edge', 'Internet Explorer', 'Firefox', 'Safari'],
-        npmPackages: ['react', 'react-dom', defaultScriptVersion],
+        npmPackages: ['react', 'react-dom', 'react-scripts'],
         npmGlobalPackages: ['create-react-app'],
       },
       {
@@ -185,8 +183,8 @@ createApp(
   projectName,
   program.verbose,
   program.scriptsVersion,
-  program.template,
-  program.useNpm,
+  program.template || 'extension',
+  program.useNpm || 'react-ext-scripts',
   program.usePnp
 );
 
@@ -426,9 +424,7 @@ function run(
           console.log('');
           console.log(
             `The ${chalk.cyan(packageInfo.name)} version you're using ${
-              packageInfo.name === defaultScriptVersion
-                ? 'is not'
-                : 'may not be'
+              packageInfo.name === 'react-scripts' ? 'is not' : 'may not be'
             } compatible with the ${chalk.cyan('--template')} option.`
           );
           console.log('');
@@ -534,7 +530,7 @@ function run(
 }
 
 function getInstallPackage(version, originalDirectory) {
-  let packageToInstall = defaultScriptVersion;
+  let packageToInstall = 'react-scripts';
   const validSemver = semver.valid(version);
   if (validSemver) {
     packageToInstall += `@${validSemver}`;
@@ -586,7 +582,7 @@ function getInstallPackage(version, originalDirectory) {
 }
 
 function getTemplateInstallPackage(template, originalDirectory) {
-  let templateToInstall = 'cra-template-extension';
+  let templateToInstall = 'cra-template';
   if (template) {
     if (template.match(/^file:/)) {
       templateToInstall = `file:${path.resolve(
@@ -829,7 +825,7 @@ function checkAppName(appName) {
   }
 
   // TODO: there should be a single place that holds the dependencies
-  const dependencies = ['react', 'react-dom', defaultScriptVersion].sort();
+  const dependencies = ['react', 'react-dom', 'react-scripts'].sort();
   if (dependencies.includes(appName)) {
     console.error(
       chalk.red(
