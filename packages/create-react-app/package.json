@@ -1,13 +1,13 @@
 {
-  "name": "create-react-app",
-  "version": "3.4.1",
+  "name": "create-react-ext",
+  "version": "0.0.0",
   "keywords": [
     "react"
   ],
   "description": "Create React apps with no build configuration.",
   "repository": {
     "type": "git",
-    "url": "https://github.com/facebook/create-react-app.git",
+    "url": "https://github.com/xuuajii/create-react-ext.git",
     "directory": "packages/create-react-app"
   },
   "license": "MIT",
@@ -15,7 +15,7 @@
     "node": ">=10"
   },
   "bugs": {
-    "url": "https://github.com/facebook/create-react-app/issues"
+    "url": "https://github.com/xuuajii/create-react-ext/issues"
   },
   "files": [
     "index.js",
