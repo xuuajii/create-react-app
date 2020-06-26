@@ -34,6 +34,8 @@
 
 'use strict';
 
+const defaultScriptVersion = 'react-ext-scripts';
+
 const chalk = require('chalk');
 const commander = require('commander');
 const dns = require('dns');
@@ -153,7 +155,7 @@ if (program.info) {
         System: ['OS', 'CPU'],
         Binaries: ['Node', 'npm', 'Yarn'],
         Browsers: ['Chrome', 'Edge', 'Internet Explorer', 'Firefox', 'Safari'],
-        npmPackages: ['react', 'react-dom', 'react-scripts'],
+        npmPackages: ['react', 'react-dom', defaultScriptVersion],
         npmGlobalPackages: ['create-react-app'],
       },
       {
@@ -234,16 +236,20 @@ function createApp(name, verbose, version, template, useNpm, usePnp) {
   if (!useYarn) {
     const npmInfo = checkNpmVersion();
     if (!npmInfo.hasMinNpm) {
-      if (npmInfo.npmVersion) {
-        console.log(
-          chalk.yellow(
-            `You are using npm ${npmInfo.npmVersion} so the project will be bootstrapped with an old unsupported version of tools.\n\n` +
-              `Please update to npm 6 or higher for a better, fully supported experience.\n`
-          )
-        );
-      }
-      // Fall back to latest supported react-scripts for npm 3
-      version = 'react-scripts@0.9.x';
+      // if (npmInfo.npmVersion) {
+      //   console.log(
+      //     chalk.yellow(
+      //       `You are using npm ${npmInfo.npmVersion} so the project will be bootstrapped with an old unsupported version of tools.\n\n` +
+      //         `Please update to npm 6 or higher for a better, fully supported experience.\n`
+      //     )
+      //   );
+      // }
+      // // Fall back to latest supported react-scripts for npm 3
+      // version = 'react-scripts@0.9.x';
+      console.log(
+        'Your npm version is not supported, please update to npm 6 or higher'
+      );
+      process.exit(1);
     }
   } else if (usePnp) {
     const yarnInfo = checkYarnVersion();
@@ -420,7 +426,9 @@ function run(
           console.log('');
           console.log(
             `The ${chalk.cyan(packageInfo.name)} version you're using ${
-              packageInfo.name === 'react-scripts' ? 'is not' : 'may not be'
+              packageInfo.name === defaultScriptVersion
+                ? 'is not'
+                : 'may not be'
             } compatible with the ${chalk.cyan('--template')} option.`
           );
           console.log('');
@@ -526,7 +534,7 @@ function run(
 }
 
 function getInstallPackage(version, originalDirectory) {
-  let packageToInstall = 'react-scripts';
+  let packageToInstall = defaultScriptVersion;
   const validSemver = semver.valid(version);
   if (validSemver) {
     packageToInstall += `@${validSemver}`;
@@ -578,7 +586,7 @@ function getInstallPackage(version, originalDirectory) {
 }
 
 function getTemplateInstallPackage(template, originalDirectory) {
-  let templateToInstall = 'cra-template';
+  let templateToInstall = 'cra-template-extension';
   if (template) {
     if (template.match(/^file:/)) {
       templateToInstall = `file:${path.resolve(
@@ -821,7 +829,7 @@ function checkAppName(appName) {
   }
 
   // TODO: there should be a single place that holds the dependencies
-  const dependencies = ['react', 'react-dom', 'react-scripts'].sort();
+  const dependencies = ['react', 'react-dom', defaultScriptVersion].sort();
   if (dependencies.includes(appName)) {
     console.error(
       chalk.red(
