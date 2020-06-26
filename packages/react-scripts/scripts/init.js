@@ -58,7 +58,7 @@ function tryGitInit() {
 function tryGitCommit(appPath) {
   try {
     execSync('git add -A', { stdio: 'ignore' });
-    execSync('git commit -m "Initialize project using Create React App"', {
+    execSync('git commit -m "Initialize project using Create React Ext"', {
       stdio: 'ignore',
     });
     return true;
@@ -233,14 +233,19 @@ module.exports = function (
 
   // Copy the files for the user
   const templateDir = path.join(templatePath, 'template');
+  const packageJson = require(path.join(appPath, 'package.json'));
+  const publicPath = path.join(appPath, 'public');
+  const defaultExtName = 'react-ext-scripts';
+  const qExtPath = path.join(appPath, 'public', defaultExtName + '.qext');
   if (fs.existsSync(templateDir)) {
     fs.copySync(templateDir, appPath);
-    const templateExtName = path.join(appPath, 'react-ext.js');
-    const appExtName = path.join(
-      appPath,
-      require(path.join(appPath, 'package.json')).name
-    );
+    const templateExtName = path.join(publicPath, defaultExtName + '.js');
+    const appExtName = path.join(publicPath, packageJson.name + '.js');
     fs.renameSync(templateExtName, appExtName);
+    const qExt = fs.readJsonSync(qExtPath);
+    qExt.name = appName;
+    fs.writeJsonSync(path.join(publicPath, appName + '.qext'), qExt);
+    fs.removeSync(qExtPath);
   } else {
     console.error(
       `Could not locate supplied template: ${chalk.green(templateDir)}`
@@ -379,9 +384,9 @@ module.exports = function (
     chalk.cyan(`  ${displayedCommand} ${useYarn ? '' : 'run '}build`)
   );
   console.log('    Bundles the app into static files for production.');
-  console.log();
-  console.log(chalk.cyan(`  ${displayedCommand} test`));
-  console.log('    Starts the test runner.');
+  // console.log();
+  // console.log(chalk.cyan(`  ${displayedCommand} test`));
+  // console.log('    Starts the test runner.');
   console.log();
   console.log(
     chalk.cyan(`  ${displayedCommand} ${useYarn ? '' : 'run '}eject`)

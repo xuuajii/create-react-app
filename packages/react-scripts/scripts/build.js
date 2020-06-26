@@ -1,10 +1,5 @@
 // @remove-on-eject-begin
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
+
 // @remove-on-eject-end
 'use strict';
 
@@ -30,6 +25,8 @@ if (process.env.SKIP_PREFLIGHT_CHECK !== 'true') {
 const verifyTypeScriptSetup = require('./utils/verifyTypeScriptSetup');
 verifyTypeScriptSetup();
 // @remove-on-eject-end
+const verifyExtTree = require('./utils/verifyExtTree');
+verifyExtTree();
 
 const path = require('path');
 const chalk = require('react-dev-utils/chalk');
@@ -252,8 +249,12 @@ const compressAndRemove = () => {
   files.forEach(file => {
     const appNameRegExp = new RegExp(appName + '.js');
     if (file.match(appNameRegExp)) {
-      console.log('aaaaaaaaaaaaaaaaaaaaaaa');
-      archive.file(file, {
+      const fileContent = fs.readFileSync(file).toString();
+      //const updatedFileContent=fileContent.replace('http://localhost:3000', '.')
+      const updatedFileContent = fileContent
+        .replace(/http:\/\/localhost:(.*)\//, './')
+        .replace('.js', '');
+      archive.append(updatedFileContent, {
         name: file.substr(
           file.lastIndexOf('/'),
           file.length - file.lastIndexOf('/')

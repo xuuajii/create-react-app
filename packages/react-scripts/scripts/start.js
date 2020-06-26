@@ -29,9 +29,13 @@ if (process.env.SKIP_PREFLIGHT_CHECK !== 'true') {
 }
 const verifyTypeScriptSetup = require('./utils/verifyTypeScriptSetup');
 verifyTypeScriptSetup();
+
 // @remove-on-eject-end
+const verifyExtTree = require('./utils/verifyExtTree');
+verifyExtTree();
 
 const fs = require('fs');
+const _ = require('lodash');
 const chalk = require('react-dev-utils/chalk');
 const webpack = require('webpack');
 const WebpackDevServer = require('webpack-dev-server');
@@ -47,7 +51,7 @@ const openBrowser = require('react-dev-utils/openBrowser');
 const paths = require('../config/paths');
 const configFactory = require('../config/webpack.config');
 const createDevServerConfig = require('../config/webpackDevServer.config');
-
+const path = require('path');
 const useYarn = fs.existsSync(paths.yarnLockFile);
 const isInteractive = process.stdout.isTTY;
 
@@ -65,17 +69,8 @@ if (paths.appPath.match(/Documents\\Qlik\\Sense\\Extensions/g)) {
 }
 
 // Tools like Cloud9 rely on this.
-const DEFAULT_PORT = parseInt(process.env.PORT, 10) || 3000;
-if (DEFAULT_PORT !== 3000) {
-  const appName = require(paths.appPackageJson).name;
-  console.log(
-    chalk.yellow(
-      `You have changed webpack-dev-server port, be sure to change ${appName}.js file accordingly`
-    )
-  );
-}
+const appName = require(paths.appPackageJson).name;
 const HOST = process.env.HOST || 'localhost';
-
 if (process.env.HOST) {
   console.log(
     chalk.cyan(
@@ -91,6 +86,33 @@ if (process.env.HOST) {
     `Learn more here: ${chalk.yellow('https://cra.link/advanced-config')}`
   );
   console.log();
+}
+
+const readPort = () => {
+  const extFilePath = path.join(paths.appPublic, appName + '.js');
+  const extFileContent = fs.readFileSync(extFilePath).toString();
+  const regexp = new RegExp('http://' + HOST + ':(.*)/');
+  const matches = _.uniq(
+    extFileContent.match(regexp).filter(match => Number(match))
+  );
+  console.log(matches);
+  if (matches.length < 1) {
+    console.log('no port found, please check ' + extFilePath);
+    process.exit(1);
+  } else if (matches.length > 1) {
+    console.log(
+      'extracted more than one port from ' + extFilePath + '. Using the first'
+    );
+  }
+  return Number(matches[0]);
+};
+const DEFAULT_PORT = readPort();
+if (DEFAULT_PORT !== 3000) {
+  console.log(
+    chalk.yellow(
+      `You have changed webpack-dev-server port, be sure to change ${appName}.js file accordingly`
+    )
+  );
 }
 
 // We require that you explicitly set browsers and do not fall back to
