@@ -407,7 +407,8 @@ function run(
       .then(({ isOnline, packageInfo, templateInfo }) => {
         let packageVersion = semver.coerce(packageInfo.version);
 
-        const templatesVersionMinimum = '3.3.0';
+        //const templatesVersionMinimum = '3.3.0';
+        const templatesVersionMinimum = '0.0.0';
 
         // Assume compatibility if we can't test the version.
         if (!semver.valid(packageVersion)) {
@@ -624,7 +625,7 @@ function getTemplateInstallPackage(template, originalDirectory) {
       }
     }
   }
-  console.log(templateToInstall);
+
   return Promise.resolve(templateToInstall);
 }
 
