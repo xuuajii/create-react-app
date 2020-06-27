@@ -30,9 +30,9 @@ if (process.env.SKIP_PREFLIGHT_CHECK !== 'true') {
 const verifyTypeScriptSetup = require('./utils/verifyTypeScriptSetup');
 verifyTypeScriptSetup();
 
-// @remove-on-eject-end
 const verifyExtTree = require('./utils/verifyExtTree');
 verifyExtTree();
+// @remove-on-eject-end
 
 const fs = require('fs');
 const _ = require('lodash');

@@ -24,9 +24,10 @@ if (process.env.SKIP_PREFLIGHT_CHECK !== 'true') {
 }
 const verifyTypeScriptSetup = require('./utils/verifyTypeScriptSetup');
 verifyTypeScriptSetup();
-// @remove-on-eject-end
+
 const verifyExtTree = require('./utils/verifyExtTree');
 verifyExtTree();
+// @remove-on-eject-end
 
 const path = require('path');
 const chalk = require('react-dev-utils/chalk');
