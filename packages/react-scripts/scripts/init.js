@@ -244,7 +244,7 @@ module.exports = function (
   const packageJson = require(path.join(appPath, 'package.json'));
   const publicPath = path.join(appPath, 'public');
   const defaultExtName = 'react-ext-scripts';
-  const qExtPath = path.join(appPath, 'public', defaultExtName + '.qext');
+  const qExtPath = path.join(publicPath, defaultExtName + '.qext');
   if (fs.existsSync(templateDir)) {
     fs.copySync(templateDir, appPath);
     const templateExtName = path.join(publicPath, defaultExtName + '.js');
