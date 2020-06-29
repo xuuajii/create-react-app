@@ -21,7 +21,7 @@ const spawn = require('react-dev-utils/crossSpawn');
 const { defaultBrowsers } = require('react-dev-utils/browsersHelper');
 const os = require('os');
 const verifyTypeScriptSetup = require('./utils/verifyTypeScriptSetup');
-
+const isInQlikExtensions = require('./utils/isInQlikExtensions');
 function isInGitRepository() {
   try {
     execSync('git rev-parse --is-inside-work-tree', { stdio: 'ignore' });
@@ -87,6 +87,14 @@ module.exports = function (
   originalDirectory,
   templateName
 ) {
+  const isInExtesions = isInQlikExtensions(appPath);
+  if (!isInExtesions) {
+    console.log();
+    console.warn(
+      'You are initializing the extension outside of Qlik Sense Desktop extensions folder. This can cause unexpected behaviors and it is not supported'
+    );
+    console.log();
+  }
   const appPackage = require(path.join(appPath, 'package.json'));
   const useYarn = fs.existsSync(path.join(appPath, 'yarn.lock'));
 
