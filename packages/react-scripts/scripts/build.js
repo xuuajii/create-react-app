@@ -233,7 +233,7 @@ const compressAndRemove = () => {
     console.log(
       'archiver has been finalized and the output file descriptor has closed.'
     );
-    fs.removeSync(buildFolder);
+    //fs.removeSync(buildFolder);
   });
 
   // This event is fired when the data source is drained no matter what was the data source.
