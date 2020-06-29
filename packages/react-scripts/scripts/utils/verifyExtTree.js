@@ -38,7 +38,9 @@ const verifyExtTree = () => {
     if (templateDef !== fileContent) {
       console.log(
         chalk.yellow(
-          'Template js file has been changed. This is not supported and can cause unexpected behaviour.'
+          `Template js file has been changed. This is not supported and can cause unexpected behaviour.
+Template file path is: ${filePath}.
+          `
         )
       );
     }

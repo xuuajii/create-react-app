@@ -10,6 +10,7 @@
 
 const path = require('path');
 const fs = require('fs');
+const isInQLikExtensions = require('../scripts/utils/isInQLikExtensions');
 const getPublicUrlOrPath = require('react-dev-utils/getPublicUrlOrPath');
 const os = require('os');
 
@@ -31,11 +32,11 @@ const publicUrlOrPath = getPublicUrlOrPath(
 );
 const getQlikPath = () => {
   const osUser = os.userInfo().username.toUpperCase();
-  const isInExtesions =
-    appDirectory.match(/Documents\\Qlik\\Sense\\Extensions/g) > 0;
+  const isInExtesions = isInQLikExtensions(appDirectory);
+  //console.log('isInExtesions',isInExtesions)
   return isInExtesions
     ? appDirectory.substr(0, appDirectory.indexOf('Sense') + 5)
-    : path.resolve('C:', 'Users', osUser, 'Documents', 'Qlik', 'Sense');
+    : path.join('C:', 'Users', osUser, 'Documents', 'Qlik', 'Sense');
 };
 const qlikPath = getQlikPath();
 
@@ -85,8 +86,8 @@ module.exports = {
   publicUrlOrPath,
   ///
   qlikPath: qlikPath,
-  qlikAppsPath: path.resolve(qlikPath, 'Apps'),
-  qlikExtensionsPath: path.resolve(qlikPath, 'Extensions'),
+  qlikAppsPath: path.join(qlikPath, 'Apps'),
+  qlikExtensionsPath: path.join(qlikPath, 'Extensions'),
 };
 
 // @remove-on-eject-begin
