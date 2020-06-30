@@ -251,10 +251,12 @@ const compressAndRemove = () => {
     const appNameRegExp = new RegExp(appName + '.js');
     if (file.match(appNameRegExp)) {
       const fileContent = fs.readFileSync(file).toString();
-      //const updatedFileContent=fileContent.replace('http://localhost:3000', '.')
+      //const replaceMatch=fileContent.match(/"'(?:https|http):\/\/localhost:\d{4,}\//)
       const updatedFileContent = fileContent
-        .replace(/http:\/\/localhost:(.*)\//, './')
+        .replace(/(?:https|http):\/\/localhost:\d{4,}\//, './')
         .replace('.js', '');
+      fs.writeFileSync(file, updatedFileContent);
+
       archive.append(updatedFileContent, {
         name: file.substr(
           file.lastIndexOf('/'),
