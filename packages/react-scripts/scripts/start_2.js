@@ -21,7 +21,6 @@ process.on('unhandledRejection', err => {
 
 // Ensure environment variables are read.
 require('../config/env');
-const qlikUtils = require('./utils/qlikUtils');
 // @remove-on-eject-begin
 // Do the preflight check (only happens before eject).
 const verifyPackageTree = require('./utils/verifyPackageTree');
@@ -31,10 +30,12 @@ if (process.env.SKIP_PREFLIGHT_CHECK !== 'true') {
 const verifyTypeScriptSetup = require('./utils/verifyTypeScriptSetup');
 verifyTypeScriptSetup();
 
-qlikUtils.verifyExtTree();
+const verifyExtTree = require('./utils/verifyExtTree');
+verifyExtTree();
 // @remove-on-eject-end
 
-const fs = require('fs');
+const fs = require('fs-extra');
+const _ = require('lodash');
 const chalk = require('react-dev-utils/chalk');
 const webpack = require('webpack');
 const WebpackDevServer = require('webpack-dev-server');
@@ -48,23 +49,29 @@ const {
 } = require('react-dev-utils/WebpackDevServerUtils');
 const openBrowser = require('react-dev-utils/openBrowser');
 const paths = require('../config/paths');
+const glob = require('glob');
 const configFactory = require('../config/webpack.config');
 const createDevServerConfig = require('../config/webpackDevServer.config');
+const path = require('path');
 const useYarn = fs.existsSync(paths.yarnLockFile);
 const isInteractive = process.stdout.isTTY;
-const path = require('path');
+
 // Warn and crash if required files are missing
 if (!checkRequiredFiles([paths.appHtml, paths.appIndexJs])) {
   process.exit(1);
 }
 
-// Tools like Cloud9 rely on this.
-//const DEFAULT_PORT = parseInt(process.env.PORT, 10) || 3000;
-const HOST = process.env.HOST || 'localhost';
-const DEFAULT_PORT = qlikUtils.readPort(HOST);
-//console.log(DEFAULT_PORT)
-// const HOST = process.env.HOST || '0.0.0.0';
+if (paths.appPath.match(/Documents\\Qlik\\Sense\\Extensions/g)) {
+  console.log(
+    chalk.yellow(
+      'The extension is supposed to be served inside Qlik Sense Desktop extensions directory. Other configurations are not supported'
+    )
+  );
+}
 
+// Tools like Cloud9 rely on this.
+const appName = require(paths.appPackageJson).name;
+const HOST = process.env.HOST || 'localhost';
 if (process.env.HOST) {
   console.log(
     chalk.cyan(
@@ -82,26 +89,36 @@ if (process.env.HOST) {
   console.log();
 }
 
-// Check if a build version already exists and backup its qext to avoid conflicts.
-// Prepare a callback to restore previous versions when exit
-const appName = require(paths.appPackageJson).name;
-const qExtPath = path.resolve(path.join(paths.appBuild, appName + '.qext'));
-const qExtExists = fs.existsSync(qExtPath);
-const qExtBckPath = qExtPath.replace('qext', 'bck');
-const onExit = () => {
-  const qExtBckExists = fs.existsSync(qExtBckPath);
-  if (qExtBckExists) {
-    console.log(`Restoring qExt file in build folder...`);
-    console.log();
-    fs.renameSync(qExtBckPath, qExtPath);
-    console.log();
-    console.log('qExt restored');
+const readPort = () => {
+  const extFilePath = path.join(paths.appPublic, appName + '.js');
+  const extFileContent = fs.readFileSync(extFilePath).toString();
+  const regExpMatch = "'(?:https|http)://" + HOST + ":\\d{4,}/bundle\\.js'";
+  const regexp = new RegExp(regExpMatch);
+  const matches = extFileContent.match(regexp);
+
+  if (matches === null || matches.length < 1) {
+    console.log('no port found, please check ' + extFilePath);
+    process.exit(1);
+  }
+  if (matches.length > 1) {
+    console.log(
+      'extracted more than one port from ' + extFilePath + '. Using the first'
+    );
+  }
+  if (matches.length) {
+    const match = _.uniq(
+      extFileContent.match(regexp).map(match => {
+        const cleansedMatch = match
+          .match(/:\d{4,}\//)[0]
+          .replace(':', '')
+          .replace('/', '');
+        return cleansedMatch;
+      })
+    )[0];
+    return Number(match);
   }
 };
-if (qExtExists) {
-  fs.renameSync(qExtPath, qExtBckPath);
-  console.log('Found a build version, backupping qExt file');
-}
+const DEFAULT_PORT = readPort();
 
 // We require that you explicitly set browsers and do not fall back to
 // browserslist defaults.
@@ -117,7 +134,7 @@ checkBrowsers(paths.appPath, isInteractive)
       // We have not found a port.
       return;
     }
-
+    //console.log(port)
     const config = configFactory('development');
     const protocol = process.env.HTTPS === 'true' ? 'https' : 'http';
     const appName = require(paths.appPackageJson).name;
@@ -127,7 +144,7 @@ checkBrowsers(paths.appPath, isInteractive)
       protocol,
       HOST,
       port,
-      'public' //paths.publicUrlOrPath.slice(0, -1)
+      paths.publicUrlOrPath.slice(0, -1)
     );
     const devSocket = {
       warnings: warnings =>
@@ -153,11 +170,30 @@ checkBrowsers(paths.appPath, isInteractive)
       paths.appPublic,
       paths.publicUrlOrPath
     );
+    // Check if a build version already exists and backup its qext to avoid conflicts.
+    // Prepare a callback to restore previous versions when exit
+    const qExtPath = path.resolve(path.join(paths.appBuild, appName + '.qext'));
+    const qExtExists = fs.existsSync(qExtPath);
+    const qExtBckPath = qExtPath.replace('qext', 'bck');
+    const onExit = () => {
+      const qExtBckExists = fs.existsSync(qExtBckPath);
+      if (qExtBckExists) {
+        console.log(`Restoring qExt file in build folder...`);
+        console.log();
+        fs.renameSync(qExtBckPath, qExtPath);
+        console.log();
+        console.log('qExt restored');
+      }
+    };
+    if (qExtExists) {
+      fs.renameSync(qExtPath, qExtBckPath);
+      console.log('Found a build version, backupping qExt file');
+    }
+
     // Serve webpack assets generated by the compiler over a web server.
     const serverConfig = createDevServerConfig(
       proxyConfig,
-      //urls.lanUrlForConfig,
-      DEFAULT_PORT
+      urls.lanUrlForConfig
     );
     const devServer = new WebpackDevServer(compiler, serverConfig);
     // Launch WebpackDevServer.
@@ -170,10 +206,39 @@ checkBrowsers(paths.appPath, isInteractive)
       }
 
       console.log(chalk.cyan('Starting the development server...\n'));
-      // openBrowser(urls.localUrlForBrowser);
-      const url = qlikUtils.prepareQlikUrl(HOST);
-      //openBrowser('http://localhost:4848/sense/app/C%3A%5CUsers%5CPDEREGIB%5CDocuments%5CQlik%5CSense%5CApps%5Ctest.qvf/sheet/7af1d319-b969-4007-b680-469442747f5a/state/0')
-      openBrowser(url);
+
+      const prepareQlikUrl = () => {
+        const firstAppinFolder = _.last(
+          glob.sync(paths.qlikAppsPath + '/*.qvf')[0].split('/')
+        );
+        const DEFAULT_QLIK_APP = process.env.QLIK_APP_NAME || firstAppinFolder;
+        if (!process.env.QLIK_APP_NAME) {
+          console.log(
+            chalk.cyan(
+              'No QLIK_APP_NAME was provided, opening ' + firstAppinFolder
+            )
+          );
+        }
+        const browserAppsPath =
+          paths.qlikAppsPath.replace(':', '%3A').replace(/\\/g, '%5C') + '%5C';
+        const sheetPath = process.env.QLIK_SHEET_ID
+          ? 'sheet/' + process.env.QLIK_SHEET_ID
+          : '';
+        const url =
+          'http://' +
+          HOST +
+          ':4848/sense/app/' +
+          browserAppsPath +
+          DEFAULT_QLIK_APP +
+          '/' +
+          sheetPath;
+        //console.log(url)
+        return url;
+      };
+      const qlikUrl = prepareQlikUrl();
+      //openBrowser(qlikUrl);
+
+      openBrowser(qlikUrl);
     });
 
     ['SIGINT', 'SIGTERM'].forEach(function (sig) {

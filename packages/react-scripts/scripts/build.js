@@ -25,8 +25,8 @@ if (process.env.SKIP_PREFLIGHT_CHECK !== 'true') {
 const verifyTypeScriptSetup = require('./utils/verifyTypeScriptSetup');
 verifyTypeScriptSetup();
 
-const verifyExtTree = require('./utils/verifyExtTree');
-verifyExtTree();
+const qlikUtils = require('./utils/qlikUtils');
+qlikUtils.verifyExtTree();
 // @remove-on-eject-end
 
 const path = require('path');
